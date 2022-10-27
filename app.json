@@ -1,0 +1,15 @@
+{
+    "id": "c73ca29e-bd16-4de2-8d25-b73b8d75a3d2",
+    "version": "0.0.1",
+    "requiredApiVersion": "^1.4.0",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "a",
+        "homepage": "a",
+        "support": "a"
+    },
+    "name": "TipOfTheDay",
+    "nameSlug": "tipoftheday",
+    "classFile": "TipOfTheDayApp.ts",
+    "description": "Rocket.Cat gives you a tip or trick every now and then"
+}
