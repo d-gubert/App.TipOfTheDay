@@ -8,10 +8,10 @@ import {
 } from '@rocket.chat/apps-engine/definition/accessors';
 import { App } from '@rocket.chat/apps-engine/definition/App';
 import { IAppInfo, RocketChatAssociationModel, RocketChatAssociationRecord } from '@rocket.chat/apps-engine/definition/metadata';
-import { IPostRoomUserJoined } from '@rocket.chat/apps-engine/definition/rooms';
+import { IPostRoomUserJoined, IRoom, IRoomUserJoinedContext, RoomType } from '@rocket.chat/apps-engine/definition/rooms';
 import { IPostUserCreated, IPostUserLoggedIn, IUser, IUserContext } from '@rocket.chat/apps-engine/definition/users';
 import { sendDirectMessage } from './src/lib/message';
-import { userCreatedMessage } from './src/lib/tips';
+import { getRandomTip, tipOfTheDay, welcomeMessage } from './src/lib/tips';
 
 export class TipOfTheDayApp extends App implements IPostUserCreated, IPostUserLoggedIn, IPostRoomUserJoined {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
@@ -24,8 +24,15 @@ export class TipOfTheDayApp extends App implements IPostUserCreated, IPostUserLo
             return;
         }
 
+        const tip = getRandomTip();
+        const blocks = modify.getCreator().getBlockBuilder();
+
+        if (tip.image) {
+            blocks.addImageBlock({ imageUrl: tip.image, altText: 'Tip of the Day' });
+        }
+
         // For future self: get user's language and translate accordingly
-        await sendDirectMessage(read, modify, context.user, userCreatedMessage);
+        await sendDirectMessage(read, modify, context.user, welcomeMessage.replace('%s', tip.message), blocks);
     }
 
     public async executePostUserLoggedIn(user: IUser, read: IRead, http: IHttp, persistence: IPersistence, modify: IModify): Promise<void> {
@@ -54,9 +61,38 @@ export class TipOfTheDayApp extends App implements IPostUserCreated, IPostUserLo
             return;
         }
 
+        const tip = getRandomTip();
+        const blocks = modify.getCreator().getBlockBuilder();
 
+        if (tip.image) {
+            blocks.addImageBlock({ imageUrl: tip.image, altText: 'Tip of the Day' });
+        }
 
         // For future self: get user's language and translate accordingly
-        sendDirectMessage(read, modify, user, userCreatedMessage);
+        await sendDirectMessage(read, modify, user, tipOfTheDay.replace('%s', tip.message), blocks);
+
+        await persistence.updateByAssociations([
+            new RocketChatAssociationRecord(RocketChatAssociationModel.USER, user.id),
+            new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, 'loginInfo'),
+        ], {
+            loginCount: loginInfo.loginCount + 1,
+            lastLogin: new Date(),
+        });
+    }
+
+    public async executePostRoomUserJoined(context: IRoomUserJoinedContext, read: IRead, http: IHttp, persistence: IPersistence, modify: IModify): Promise<void> {
+        if (context.room.type !== RoomType.DIRECT_MESSAGE) {
+            return;
+        }
+
+        const tip = getRandomTip();
+        const blocks = modify.getCreator().getBlockBuilder();
+
+        if (tip.image) {
+            blocks.addImageBlock({ imageUrl: tip.image, altText: 'Tip of the Day' });
+        }
+
+        // For future self: get user's language and translate accordingly
+        await sendDirectMessage(read, modify, context.joiningUser, tipOfTheDay.replace('%s', tip.message), blocks);
     }
 }

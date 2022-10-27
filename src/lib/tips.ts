@@ -6,7 +6,9 @@ I'm Rocket.Cat. This is my home, so let me show you around :cat:
 
 I'll write you later with more tips and tricks about Rocket.Chat! Enjoy your time here :rocket:`;
 
-export const tipOfTheDay = `Greetings! I have a new tip for you today`;
+export const tipOfTheDay = `Greetings! I have a new tip for you today
+
+%s`;
 
 export const tips = {
     'sidebar': {
